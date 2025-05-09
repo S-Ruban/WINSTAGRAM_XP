@@ -34,6 +34,7 @@ While you could consider using a shared folder between host and VM, errors may a
 As a workaround, I decided to use the good ol-fashioned HTTP server to pull/push code.
 
 `curl` and `wget` aren't available in Windows XP. Luckily, curl.se (an archived page rather) has an older `curl` (version 7.8) that is still compatible with Windows XP. You can download it from [here](https://web.archive.org/web/20211208160135/https://curl.se/windows/).
+
 You will have to add `curl.exe` to `C:\Windows\System32` to be able to use it from the command line.
 
 ## Server
