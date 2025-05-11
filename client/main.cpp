@@ -6,7 +6,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
     const char CLASS_NAME[] = "WinstagramXP";
 
-    WNDCLASS wc = {};
+    WNDCLASS wc;
+    memset(&wc, 0, sizeof(wc));
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
@@ -18,13 +19,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
         0, CLASS_NAME, "Winstagram XP",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 400, 600,
-        nullptr, nullptr, hInstance, nullptr);
+        NULL, NULL, hInstance, NULL);
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
-    MSG msg = {};
-    while (GetMessage(&msg, nullptr, 0, 0))
+    MSG msg;
+    memset(&msg, 0, sizeof(msg));
+    while (GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -38,44 +40,44 @@ void AddUIControls(HWND hwnd)
     CreateWindow("STATIC", "Instagram",
                  WS_VISIBLE | WS_CHILD | SS_CENTER,
                  10, 10, 300, 20,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     CreateWindow("BUTTON", "Refresh",
                  WS_VISIBLE | WS_CHILD,
                  310, 10, 70, 20,
-                 hwnd, (HMENU)1, nullptr, nullptr);
+                 hwnd, (HMENU)1, NULL, NULL);
 
     // Dummy Post 1
     CreateWindow("STATIC", "User1",
                  WS_VISIBLE | WS_CHILD,
                  10, 50, 100, 20,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     CreateWindow("STATIC", "[Image]",
                  WS_VISIBLE | WS_CHILD | SS_CENTER,
                  10, 70, 360, 200,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     CreateWindow("STATIC", "Caption: Hello world!",
                  WS_VISIBLE | WS_CHILD,
                  10, 280, 360, 20,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     // Dummy Post 2
     CreateWindow("STATIC", "User2",
                  WS_VISIBLE | WS_CHILD,
                  10, 310, 100, 20,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     CreateWindow("STATIC", "[Image]",
                  WS_VISIBLE | WS_CHILD | SS_CENTER,
                  10, 330, 360, 200,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 
     CreateWindow("STATIC", "Caption: My cat",
                  WS_VISIBLE | WS_CHILD,
                  10, 540, 360, 20,
-                 hwnd, nullptr, nullptr, nullptr);
+                 hwnd, NULL, NULL, NULL);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
