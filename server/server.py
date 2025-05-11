@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, send_from_directory, Response
 import os
 
 app = Flask(__name__)
@@ -16,7 +16,7 @@ def upload_file():
     file = request.files['file']
     if file.filename == '':
         return "No selected file", 400
-    filepath = os.path.join('../client/', file.filename)
+    filepath = os.path.join('client', file.filename)
     file.save(filepath)
     return f"File {file.filename} uploaded successfully."
 
@@ -43,14 +43,12 @@ def delete_all():
 @app.route('/list_files', methods=['GET'])
 def list_files():
     files_list = []
+    client_dir = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), os.path.pardir, "client"))
+    for file in os.listdir(client_dir):
+        files_list.append(file)
 
-    # Walk the directory and list files and subdirectories
-    for dirpath, dirnames, filenames in os.walk('../client/'):
-        for filename in filenames:
-            filepath = os.path.join(dirpath, filename)
-            files_list.append(filepath.replace(
-                '../client/' + os.sep, ""))  # Relative path
-    return jsonify(files_list), 200
+    return Response('\n'.join(files_list), mimetype='text/plain')
 
 
 @app.route('/download/<path:filename>', methods=['GET'])
