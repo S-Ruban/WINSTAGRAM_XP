@@ -10,9 +10,9 @@
 // Define the Post structure
 struct Post
 {
-    const char *username;
-    const char *caption;
-    const char *imagePath; // Optional for now
+    char username[1024];
+    char caption[1024];
+    char imagePath[1024]; // Optional for now
 };
 
 void debug(char *str)
@@ -142,24 +142,21 @@ void LoadAndShufflePosts()
 
     g_posts.clear();
 
-    char line[512];
-    while (fgets(line, sizeof(line), file))
+    char str[512];
+    Post p;
+    while (fgets(str, sizeof(str), file))
     {
-        Post p;
-        char *sep = strchr(line, '|');
-        if (sep)
+        const char *delimiters = "|";
+        char *token = strtok(str, delimiters);
+        int i = 0;
+        while (token != NULL)
         {
-            *sep = '\0'; // split at the '|'
-            char *username = line;
-            char *caption = sep + 1;
-
-            // strip trailing newline
-            char *newline = strchr(caption, '\n');
-            if (newline)
-                *newline = '\0';
-
-            p.username = line;
-            p.caption = line;
+            if (i & 1)
+                strcpy(p.username, token);
+            else
+                strcpy(p.caption, token);
+            token = strtok(NULL, delimiters);
+            i++;
         }
         g_posts.push_back(p);
     }
