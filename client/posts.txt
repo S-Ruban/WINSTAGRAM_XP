@@ -1,3 +1,30 @@
-user_one|This is the first post caption!
-second_user|Caption for another post
-third_user|Yet another caption here
+ivan::Simple times.::placeholder.jpg
+eve::Simple times.::placeholder.jpg
+judy::Just vibing.::placeholder.jpg
+heidi::Love this aesthetic!::placeholder.jpg
+bob::Posting from WinClassic!::placeholder.jpg
+charlie::Can’t believe this works!::placeholder.jpg
+judy::Enjoying the retro vibes!::placeholder.jpg
+judy::Let’s add more posts!::placeholder.jpg
+grace::Love this aesthetic!::placeholder.jpg
+judy::Love this aesthetic!::placeholder.jpg
+judy::Love this aesthetic!::placeholder.jpg
+charlie::Love this aesthetic!::placeholder.jpg
+dave::Love this aesthetic!::placeholder.jpg
+charlie::Enjoying the retro vibes!::placeholder.jpg
+charlie::Enjoying the retro vibes!::placeholder.jpg
+eve::Posting from WinClassic!::placeholder.jpg
+ivan::Let’s add more posts!::placeholder.jpg
+alice::Just vibing.::placeholder.jpg
+grace::Testing scrollbar now.::placeholder.jpg
+frank::Testing scrollbar now.::placeholder.jpg
+eve::Testing scrollbar now.::placeholder.jpg
+bob::Love this aesthetic!::placeholder.jpg
+ivan::Let’s add more posts!::placeholder.jpg
+alice::Enjoying the retro vibes!::placeholder.jpg
+alice::Throwback to the 2000s!::placeholder.jpg
+frank::Testing scrollbar now.::placeholder.jpg
+frank::Enjoying the retro vibes!::placeholder.jpg
+grace::Enjoying the retro vibes!::placeholder.jpg
+dave::Throwback to the 2000s!::placeholder.jpg
+eve::Simple times.::placeholder.jpg
