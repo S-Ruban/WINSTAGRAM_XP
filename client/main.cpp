@@ -63,7 +63,7 @@ void LoadPostsFromFile()
             Post p;
             p.username = username;
             p.caption = caption;
-            p.imagePath = "placeholder.jpg";
+            p.imagePath = imagePath;
             g_posts.push_back(p);
         }
     }
@@ -231,6 +231,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         RECT client;
         GetClientRect(hwnd, &client);
         int y = -g_scrollPos;
+        int currentY = -g_scrollPos + 10; // Start from top of scroll window, with padding
 
         for (int i = 0; i < g_posts.size(); ++i)
         {
@@ -255,6 +256,43 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             // Caption
             RECT capRect = {20, top + 85, 360, top + 105};
             DrawText(hdc, g_posts[i].caption.c_str(), -1, &capRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+            // Load and draw image if exists
+            HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, g_posts[i].imagePath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+            BITMAP bmp;
+            GetObject(hBitmap, sizeof(BITMAP), &bmp);
+            int maxWidth = 360;
+            float scale = (float)maxWidth / bmp.bmWidth;
+            int scaledWidth = maxWidth;
+            int scaledHeight = (int)(bmp.bmHeight * scale);
+            // RECT imgRect = {20, currentY, 20 + scaledWidth, currentY + scaledHeight};
+            imgRect.left = 20;
+            imgRect.top = currentY;
+            imgRect.bottom = 20 + scaledWidth;
+            imgRect.right = currentY + scaledHeight;
+
+            if (hBitmap)
+            {
+                HDC hdcMem = CreateCompatibleDC(hdc);
+                HBITMAP oldBmp = (HBITMAP)SelectObject(hdcMem, hBitmap);
+
+                // Stretch or BitBlt depending on size
+                StretchBlt(hdc, imgRect.left, imgRect.top,
+                           scaledWidth, scaledHeight,
+                           hdcMem, 0, 0, bmp.bmWidth, bmp.bmHeight,
+                           SRCCOPY);
+
+                SelectObject(hdcMem, oldBmp);
+                DeleteDC(hdcMem);
+                DeleteObject(hBitmap);
+            }
+            else
+            {
+                // fallback if file not found
+                FillRect(hdc, &imgRect, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+                FrameRect(hdc, &imgRect, (HBRUSH)GetStockObject(GRAY_BRUSH));
+            }
         }
 
         EndPaint(hwnd, &ps);

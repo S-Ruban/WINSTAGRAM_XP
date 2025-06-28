@@ -1,30 +1,30 @@
-ivan::Simple times.::placeholder.jpg
-eve::Simple times.::placeholder.jpg
-judy::Just vibing.::placeholder.jpg
-heidi::Love this aesthetic!::placeholder.jpg
-bob::Posting from WinClassic!::placeholder.jpg
-charlie::Can’t believe this works!::placeholder.jpg
-judy::Enjoying the retro vibes!::placeholder.jpg
-judy::Let’s add more posts!::placeholder.jpg
-grace::Love this aesthetic!::placeholder.jpg
-judy::Love this aesthetic!::placeholder.jpg
-judy::Love this aesthetic!::placeholder.jpg
-charlie::Love this aesthetic!::placeholder.jpg
-dave::Love this aesthetic!::placeholder.jpg
-charlie::Enjoying the retro vibes!::placeholder.jpg
-charlie::Enjoying the retro vibes!::placeholder.jpg
-eve::Posting from WinClassic!::placeholder.jpg
-ivan::Let’s add more posts!::placeholder.jpg
-alice::Just vibing.::placeholder.jpg
-grace::Testing scrollbar now.::placeholder.jpg
-frank::Testing scrollbar now.::placeholder.jpg
-eve::Testing scrollbar now.::placeholder.jpg
-bob::Love this aesthetic!::placeholder.jpg
-ivan::Let’s add more posts!::placeholder.jpg
-alice::Enjoying the retro vibes!::placeholder.jpg
-alice::Throwback to the 2000s!::placeholder.jpg
-frank::Testing scrollbar now.::placeholder.jpg
-frank::Enjoying the retro vibes!::placeholder.jpg
-grace::Enjoying the retro vibes!::placeholder.jpg
-dave::Throwback to the 2000s!::placeholder.jpg
-eve::Simple times.::placeholder.jpg
+ivan::Windows XP forever!::bmp_08.bmp
+grace::Let’s add more posts!::bmp_08.bmp
+eve::Posting from WinClassic!::greenland_grid_velo.bmp
+ivan::Let’s add more posts!::blackbuck.bmp
+dave::Just vibing.::dots.bmp
+frank::Testing scrollbar now.::greenland_grid_velo.bmp
+dave::Let’s add more posts!::dots.bmp
+judy::Love this aesthetic!::greenland_grid_velo.bmp
+frank::Windows XP forever!::bmp_24.bmp
+frank::Enjoying the retro vibes!::bmp_08.bmp
+bob::Can’t believe this works!::greenland_grid_velo.bmp
+ivan::Enjoying the retro vibes!::bmp_08.bmp
+charlie::Just vibing.::blackbuck.bmp
+judy::Love this aesthetic!::lena.bmp
+ivan::Windows XP forever!::bmp_08.bmp
+charlie::Throwback to the 2000s!::blackbuck.bmp
+grace::Enjoying the retro vibes!::bmp_08.bmp
+judy::Just vibing.::blackbuck.bmp
+grace::Just vibing.::bmp_24.bmp
+bob::Can’t believe this works!::lena.bmp
+bob::Can’t believe this works!::lena.bmp
+dave::Enjoying the retro vibes!::dots.bmp
+grace::Windows XP forever!::blackbuck.bmp
+dave::Posting from WinClassic!::lena.bmp
+bob::Let’s add more posts!::lena.bmp
+alice::Let’s add more posts!::greenland_grid_velo.bmp
+alice::Windows XP forever!::bmp_08.bmp
+charlie::Throwback to the 2000s!::lena.bmp
+alice::Just vibing.::blackbuck.bmp
+charlie::Enjoying the retro vibes!::greenland_grid_velo.bmp
