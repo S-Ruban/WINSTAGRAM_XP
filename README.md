@@ -71,3 +71,5 @@ I obtained test bmp files from:
 
 [Some old USC website](https://people.math.sc.edu/Burkardt/data/bmp/bmp.html) \
 [hlevkin.com](https://www.hlevkin.com/hlevkin/06testimages.htm)
+
+And of course: [The main motivation for the project](https://www.behance.net/gallery/41023081/Instagram-for-Win95)
