@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 
+int g_totalContentHeight = 0;
+
 struct Post
 {
     std::string username;
@@ -69,6 +71,44 @@ void LoadPostsFromFile()
     }
 }
 
+int CalculateFeedHeight()
+{
+    int total = 10;
+
+    for (size_t i = 0; i < g_posts.size(); ++i)
+    {
+        HBITMAP hBitmap =
+            (HBITMAP)LoadImage(
+                NULL,
+                g_posts[i].imagePath.c_str(),
+                IMAGE_BITMAP,
+                0,
+                0,
+                LR_LOADFROMFILE);
+
+        int scaledHeight = 200; // fallback
+
+        if (hBitmap)
+        {
+            BITMAP bmp;
+            GetObject(hBitmap, sizeof(BITMAP), &bmp);
+
+            int maxWidth = 250;
+            float scale = (float)maxWidth / bmp.bmWidth;
+            scaledHeight = (int)(bmp.bmHeight * scale);
+
+            DeleteObject(hBitmap);
+        }
+
+        total += 25;                // username
+        total += scaledHeight + 10; // image
+        total += 30;                // caption
+        total += 20;                // padding
+    }
+
+    return total;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
     g_hInstance = hInstance;
@@ -111,7 +151,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         // Create the scrollable child window
         g_hScrollWnd = CreateWindow("ScrollWin", NULL,
-                                    WS_CHILD | WS_VISIBLE | WS_VSCROLL,
+                                    // WS_CHILD | WS_VISIBLE | WS_VSCROLL,
+                                    WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_TABSTOP,
                                     0, 40, 400, 560, // leave space at top for title and button
                                     hwnd, NULL, g_hInstance, NULL);
 
@@ -160,6 +201,42 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
+
+    case WM_KEYDOWN:
+    {
+        SCROLLINFO si;
+        switch (wParam)
+        {
+        case VK_HOME:
+            g_scrollPos = 0;
+            break;
+
+        case VK_END:
+        {
+            memset(&si, 0, sizeof(si));
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_ALL;
+
+            GetScrollInfo(g_hScrollWnd, SB_VERT, &si);
+
+            g_scrollPos = si.nMax - si.nPage;
+            if (g_scrollPos < 0)
+                g_scrollPos = 0;
+
+            break;
+        }
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+
+        si.fMask = SIF_POS;
+        si.nPos = g_scrollPos;
+        SetScrollInfo(g_hScrollWnd, SB_VERT, &si, TRUE);
+
+        InvalidateRect(g_hScrollWnd, NULL, TRUE);
+        return 0;
+    }
     }
 
     return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -177,7 +254,8 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         si.nMin = 0;
         // si.nMax = NUM_POSTS * POST_HEIGHT;
         LoadPostsFromFile();
-        si.nMax = g_posts.size() * POST_HEIGHT;
+        // si.nMax = g_posts.size() * POST_HEIGHT;
+        si.nMax = CalculateFeedHeight();
         si.nPage = 600;
         SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
         return 0;
@@ -230,58 +308,83 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
         RECT client;
         GetClientRect(hwnd, &client);
-        int y = -g_scrollPos;
-        int currentY = -g_scrollPos + 10; // Start from top of scroll window, with padding
+
+        int currentY = -g_scrollPos + 10;
 
         for (int i = 0; i < g_posts.size(); ++i)
         {
-            int top = y + i * POST_HEIGHT + 10;
-            int bottom = top + POST_HEIGHT - 10;
+            int postTop = currentY;
 
-            RECT postRect = {10, top, 380, bottom};
-            HBRUSH lightGrayBrush = CreateSolidBrush(RGB(230, 230, 230));
-            FillRect(hdc, &postRect, lightGrayBrush);
-            FrameRect(hdc, &postRect, (HBRUSH)GetStockObject(GRAY_BRUSH));
-            DeleteObject(lightGrayBrush);
-
+            // =====================
             // Username
-            RECT userRect = {20, top + 5, 360, top + 25};
-            DrawText(hdc, g_posts[i].username.c_str(), -1, &userRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+            // =====================
 
-            // Image placeholder
-            RECT imgRect = {20, top + 30, 200, top + 80};
-            FillRect(hdc, &imgRect, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
-            FrameRect(hdc, &imgRect, (HBRUSH)GetStockObject(GRAY_BRUSH));
+            RECT userRect =
+                {
+                    20,
+                    currentY + 5,
+                    360,
+                    currentY + 25};
 
-            // Caption
-            RECT capRect = {20, top + 85, 360, top + 105};
-            DrawText(hdc, g_posts[i].caption.c_str(), -1, &capRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+            DrawText(
+                hdc,
+                g_posts[i].username.c_str(),
+                -1,
+                &userRect,
+                DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
-            // Load and draw image if exists
-            HBITMAP hBitmap = (HBITMAP)LoadImage(NULL, g_posts[i].imagePath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+            currentY += 30;
 
-            BITMAP bmp;
-            GetObject(hBitmap, sizeof(BITMAP), &bmp);
-            int maxWidth = 360;
-            float scale = (float)maxWidth / bmp.bmWidth;
-            int scaledWidth = maxWidth;
-            int scaledHeight = (int)(bmp.bmHeight * scale);
-            // RECT imgRect = {20, currentY, 20 + scaledWidth, currentY + scaledHeight};
-            imgRect.left = 20;
-            imgRect.top = currentY;
-            imgRect.bottom = 20 + scaledWidth;
-            imgRect.right = currentY + scaledHeight;
+            // =====================
+            // Image
+            // =====================
+
+            int scaledWidth = 250;
+            int scaledHeight = 100;
+
+            RECT imgRect;
+
+            HBITMAP hBitmap =
+                (HBITMAP)LoadImage(
+                    NULL,
+                    g_posts[i].imagePath.c_str(),
+                    IMAGE_BITMAP,
+                    0,
+                    0,
+                    LR_LOADFROMFILE);
 
             if (hBitmap)
             {
-                HDC hdcMem = CreateCompatibleDC(hdc);
-                HBITMAP oldBmp = (HBITMAP)SelectObject(hdcMem, hBitmap);
+                BITMAP bmp;
+                GetObject(hBitmap, sizeof(BITMAP), &bmp);
 
-                // Stretch or BitBlt depending on size
-                StretchBlt(hdc, imgRect.left, imgRect.top,
-                           scaledWidth, scaledHeight,
-                           hdcMem, 0, 0, bmp.bmWidth, bmp.bmHeight,
-                           SRCCOPY);
+                float scale =
+                    (float)scaledWidth / (float)bmp.bmWidth;
+
+                scaledHeight =
+                    (int)(bmp.bmHeight * scale);
+
+                imgRect.left = 20;
+                imgRect.top = currentY;
+                imgRect.right = 20 + scaledWidth;
+                imgRect.bottom = currentY + scaledHeight;
+
+                HDC hdcMem = CreateCompatibleDC(hdc);
+                HBITMAP oldBmp =
+                    (HBITMAP)SelectObject(hdcMem, hBitmap);
+
+                StretchBlt(
+                    hdc,
+                    imgRect.left,
+                    imgRect.top,
+                    scaledWidth,
+                    scaledHeight,
+                    hdcMem,
+                    0,
+                    0,
+                    bmp.bmWidth,
+                    bmp.bmHeight,
+                    SRCCOPY);
 
                 SelectObject(hdcMem, oldBmp);
                 DeleteDC(hdcMem);
@@ -289,10 +392,66 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             }
             else
             {
-                // fallback if file not found
-                FillRect(hdc, &imgRect, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
-                FrameRect(hdc, &imgRect, (HBRUSH)GetStockObject(GRAY_BRUSH));
+                imgRect.left = 20;
+                imgRect.top = currentY;
+                imgRect.right = 20 + scaledWidth;
+                imgRect.bottom = currentY + scaledHeight;
+
+                FillRect(
+                    hdc,
+                    &imgRect,
+                    (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+
+                FrameRect(
+                    hdc,
+                    &imgRect,
+                    (HBRUSH)GetStockObject(GRAY_BRUSH));
             }
+
+            currentY += scaledHeight + 10;
+
+            // =====================
+            // Caption
+            // =====================
+
+            RECT capRect =
+                {
+                    20,
+                    currentY,
+                    360,
+                    currentY + 20};
+
+            DrawText(
+                hdc,
+                g_posts[i].caption.c_str(),
+                -1,
+                &capRect,
+                DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+            currentY += 30;
+
+            // =====================
+            // Post Border
+            // =====================
+
+            RECT postRect =
+                {
+                    10,
+                    postTop,
+                    380,
+                    currentY};
+
+            HBRUSH lightGrayBrush =
+                CreateSolidBrush(RGB(230, 230, 230));
+
+            FrameRect(
+                hdc,
+                &postRect,
+                (HBRUSH)GetStockObject(GRAY_BRUSH));
+
+            DeleteObject(lightGrayBrush);
+
+            currentY += 15;
         }
 
         EndPaint(hwnd, &ps);
@@ -323,6 +482,11 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         }
         return 0;
     }
+
+    case WM_MBUTTONDOWN:
+        MessageBox(hwnd, "Middle button!", "Test", MB_OK);
+        return 0;
+
     case WM_USER + 1:
         LoadPostsFromFile(); // or however you're updating
         g_scrollPos = 0;
@@ -343,6 +507,71 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
         InvalidateRect(hwnd, NULL, TRUE);
+        return 0;
+
+    case WM_KEYDOWN:
+    {
+        SCROLLINFO si;
+        memset(&si, 0, sizeof(si));
+        si.cbSize = sizeof(si);
+        si.fMask = SIF_ALL;
+
+        GetScrollInfo(hwnd, SB_VERT, &si);
+
+        int newPos = g_scrollPos;
+
+        switch (wParam)
+        {
+        case VK_UP:
+            newPos -= 20 * 5;
+            break;
+
+        case VK_DOWN:
+            newPos += 20 * 5;
+            break;
+
+        case VK_HOME:
+            newPos = 0;
+            break;
+
+        case VK_END:
+            newPos = si.nMax - (int)si.nPage;
+            break;
+
+        default:
+            return 0;
+        }
+
+        newPos = max(si.nMin,
+                     min(newPos,
+                         si.nMax - (int)si.nPage));
+
+        if (newPos != g_scrollPos)
+        {
+            ScrollWindow(hwnd,
+                         0,
+                         g_scrollPos - newPos,
+                         NULL,
+                         NULL);
+
+            g_scrollPos = newPos;
+
+            si.fMask = SIF_POS;
+            si.nPos = g_scrollPos;
+
+            SetScrollInfo(hwnd,
+                          SB_VERT,
+                          &si,
+                          TRUE);
+
+            UpdateWindow(hwnd);
+        }
+
+        return 0;
+    }
+
+    case WM_LBUTTONDOWN:
+        SetFocus(hwnd);
         return 0;
 
     default:
