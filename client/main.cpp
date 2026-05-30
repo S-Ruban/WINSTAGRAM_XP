@@ -92,11 +92,9 @@ int CalculateFeedHeight()
         {
             BITMAP bmp;
             GetObject(hBitmap, sizeof(BITMAP), &bmp);
-
             int maxWidth = 250;
             float scale = (float)maxWidth / bmp.bmWidth;
-            scaledHeight = (int)(bmp.bmHeight * scale);
-
+            scaledHeight = (int)(bmp.bmHeight * scale); // Scale the height to match the width
             DeleteObject(hBitmap);
         }
 
@@ -171,6 +169,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         return 0;
     }
     case WM_COMMAND:
+    {
         if (LOWORD(wParam) == 1) // Refresh button
         {
             g_scrollPos = 0;
@@ -188,6 +187,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SendMessage(g_hScrollWnd, WM_USER + 1, 0, 0); // Custom message to refresh
         }
         return 0;
+    }
 
     case WM_SIZE:
         MoveWindow(g_hScrollWnd, 0, 40, LOWORD(lParam), HIWORD(lParam) - 40, TRUE);
@@ -202,7 +202,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         return 0;
 
-    case WM_KEYDOWN:
+    case WM_KEYDOWN: // This case handles keystroke events
     {
         SCROLLINFO si;
         switch (wParam)
@@ -216,9 +216,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             memset(&si, 0, sizeof(si));
             si.cbSize = sizeof(si);
             si.fMask = SIF_ALL;
-
             GetScrollInfo(g_hScrollWnd, SB_VERT, &si);
-
             g_scrollPos = si.nMax - si.nPage;
             if (g_scrollPos < 0)
                 g_scrollPos = 0;
@@ -233,7 +231,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         si.fMask = SIF_POS;
         si.nPos = g_scrollPos;
         SetScrollInfo(g_hScrollWnd, SB_VERT, &si, TRUE);
-
         InvalidateRect(g_hScrollWnd, NULL, TRUE);
         return 0;
     }
@@ -252,9 +249,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
     {
     case WM_CREATE:
         si.nMin = 0;
-        // si.nMax = NUM_POSTS * POST_HEIGHT;
         LoadPostsFromFile();
-        // si.nMax = g_posts.size() * POST_HEIGHT;
         si.nMax = CalculateFeedHeight();
         si.nPage = 600;
         SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
@@ -266,7 +261,6 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         si.fMask = SIF_ALL;
         GetScrollInfo(hwnd, SB_VERT, &si);
         int oldPos = si.nPos;
-
         switch (LOWORD(wParam))
         {
         case SB_LINEUP:
@@ -315,17 +309,8 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         {
             int postTop = currentY;
 
-            // =====================
-            // Username
-            // =====================
-
-            RECT userRect =
-                {
-                    20,
-                    currentY + 5,
-                    360,
-                    currentY + 25};
-
+            // Rendering username
+            RECT userRect = {20, currentY + 5, 360, currentY + 25};
             DrawText(
                 hdc,
                 g_posts[i].username.c_str(),
@@ -335,10 +320,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             currentY += 30;
 
-            // =====================
-            // Image
-            // =====================
-
+            // Rendering image
             int scaledWidth = 250;
             int scaledHeight = 100;
 
@@ -358,16 +340,13 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 BITMAP bmp;
                 GetObject(hBitmap, sizeof(BITMAP), &bmp);
 
-                float scale =
-                    (float)scaledWidth / (float)bmp.bmWidth;
-
-                scaledHeight =
-                    (int)(bmp.bmHeight * scale);
+                float scale = (float)scaledWidth / (float)bmp.bmWidth;
+                scaledHeight = (int)(bmp.bmHeight * scale);
 
                 imgRect.left = 20;
                 imgRect.top = currentY;
-                imgRect.right = 20 + scaledWidth;
-                imgRect.bottom = currentY + scaledHeight;
+                imgRect.right = 20 + scaledWidth;         // calculate right of image border using scaled width of image
+                imgRect.bottom = currentY + scaledHeight; // calculate bottom of image border using scaled height of image
 
                 HDC hdcMem = CreateCompatibleDC(hdc);
                 HBITMAP oldBmp =
@@ -407,19 +386,10 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     &imgRect,
                     (HBRUSH)GetStockObject(GRAY_BRUSH));
             }
-
             currentY += scaledHeight + 10;
 
-            // =====================
-            // Caption
-            // =====================
-
-            RECT capRect =
-                {
-                    20,
-                    currentY,
-                    360,
-                    currentY + 20};
+            // Rendering caption
+            RECT capRect = {20, currentY, 360, currentY + 20};
 
             DrawText(
                 hdc,
@@ -430,19 +400,9 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             currentY += 30;
 
-            // =====================
-            // Post Border
-            // =====================
-
-            RECT postRect =
-                {
-                    10,
-                    postTop,
-                    380,
-                    currentY};
-
-            HBRUSH lightGrayBrush =
-                CreateSolidBrush(RGB(230, 230, 230));
+            // Rendering border
+            RECT postRect = {10, postTop, 380, currentY};
+            HBRUSH lightGrayBrush = CreateSolidBrush(RGB(230, 230, 230));
 
             FrameRect(
                 hdc,
@@ -450,7 +410,6 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 (HBRUSH)GetStockObject(GRAY_BRUSH));
 
             DeleteObject(lightGrayBrush);
-
             currentY += 15;
         }
 
@@ -474,7 +433,6 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         {
             ScrollWindow(hwnd, 0, g_scrollPos - newPos, NULL, NULL);
             g_scrollPos = newPos;
-
             si.fMask = SIF_POS;
             si.nPos = g_scrollPos;
             SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
@@ -484,7 +442,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
     }
 
     case WM_MBUTTONDOWN:
-        MessageBox(hwnd, "Middle button!", "Test", MB_OK);
+        MessageBox(hwnd, "Middle button!", "Test", MB_OK); // Let this be here for now
         return 0;
 
     case WM_USER + 1:
@@ -523,7 +481,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         switch (wParam)
         {
         case VK_UP:
-            newPos -= 20 * 5;
+            newPos -= 20 * 5; // faster scrolling with arrow keys
             break;
 
         case VK_DOWN:
@@ -542,28 +500,15 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             return 0;
         }
 
-        newPos = max(si.nMin,
-                     min(newPos,
-                         si.nMax - (int)si.nPage));
+        newPos = max(si.nMin, min(newPos, si.nMax - (int)si.nPage));
 
         if (newPos != g_scrollPos)
         {
-            ScrollWindow(hwnd,
-                         0,
-                         g_scrollPos - newPos,
-                         NULL,
-                         NULL);
-
+            ScrollWindow(hwnd, 0, g_scrollPos - newPos, NULL, NULL);
             g_scrollPos = newPos;
-
             si.fMask = SIF_POS;
             si.nPos = g_scrollPos;
-
-            SetScrollInfo(hwnd,
-                          SB_VERT,
-                          &si,
-                          TRUE);
-
+            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
             UpdateWindow(hwnd);
         }
 

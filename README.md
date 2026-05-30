@@ -53,7 +53,7 @@ The idea is that whenever the client (Windows XP) needs to update the server wit
 
 When the client needs to fetch the updated data, it sends a `GET` request to `/list_files` to list all the available files on the server, and then for every file, it sends a `GET` request to `/download/<path:filename>`.
 
-It's not the most efficient SCM, but you know...`¯\_(ツ)_/¯`
+It's not the most efficient SCM, but you know... ¯\\_(ツ)_/¯
 
 PS: If you have a better flow, please feel free to create a PR.
 
@@ -64,3 +64,10 @@ The [client](./client/) stores the actual source code of the project. This sourc
 [download_all_files.bat](./client/download_all_files.bat) downloads the latest code from host to VM as explained above.
 
 [upload_all_files.bat](./client/upload_all_files.bat) uploads the latest code from VM to host as explained above.
+
+## Credits
+
+I obtained test bmp files from:
+
+[Some old USC website](https://people.math.sc.edu/Burkardt/data/bmp/bmp.html) \
+[hlevkin.com](https://www.hlevkin.com/hlevkin/06testimages.htm)
