@@ -126,7 +126,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 
     HWND hwnd = CreateWindow("MainWin", "Winstagram XP",
                              WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                             400, 600, NULL, NULL, hInstance, NULL);
+                             420, 600, NULL, NULL, hInstance, NULL);
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -309,6 +309,28 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         {
             int postTop = currentY;
 
+            // Rendering border
+            // RECT postRect =
+            //     {
+            //         10,
+            //         postTop,
+            //         380,
+            //         currentY};
+
+            // HBRUSH postBrush =
+            //     CreateSolidBrush(GetSysColor(COLOR_BTNFACE));
+
+            // FillRect(hdc, &postRect, postBrush);
+
+            // DrawEdge(
+            //     hdc,
+            //     &postRect,
+            //     EDGE_RAISED,
+            //     BF_RECT);
+
+            // DeleteObject(postBrush);
+            // currentY += 15;
+
             // Rendering username
             RECT userRect = {20, currentY + 5, 360, currentY + 25};
             DrawText(
@@ -352,6 +374,19 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 HBITMAP oldBmp =
                     (HBITMAP)SelectObject(hdcMem, hBitmap);
 
+                RECT frameRect =
+                    {
+                        imgRect.left - 4,
+                        imgRect.top - 4,
+                        imgRect.right + 4,
+                        imgRect.bottom + 4};
+
+                DrawEdge(
+                    hdc,
+                    &frameRect,
+                    EDGE_SUNKEN,
+                    BF_RECT);
+
                 StretchBlt(
                     hdc,
                     imgRect.left,
@@ -381,10 +416,11 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     &imgRect,
                     (HBRUSH)GetStockObject(LTGRAY_BRUSH));
 
-                FrameRect(
+                DrawEdge(
                     hdc,
                     &imgRect,
-                    (HBRUSH)GetStockObject(GRAY_BRUSH));
+                    EDGE_SUNKEN,
+                    BF_RECT);
             }
             currentY += scaledHeight + 10;
 
@@ -400,16 +436,19 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             currentY += 30;
 
-            // Rendering border
-            RECT postRect = {10, postTop, 380, currentY};
-            HBRUSH lightGrayBrush = CreateSolidBrush(RGB(230, 230, 230));
+            RECT postRect =
+                {
+                    10,
+                    postTop,
+                    380,
+                    currentY};
 
-            FrameRect(
+            DrawEdge(
                 hdc,
                 &postRect,
-                (HBRUSH)GetStockObject(GRAY_BRUSH));
+                EDGE_ETCHED,
+                BF_RECT);
 
-            DeleteObject(lightGrayBrush);
             currentY += 15;
         }
 
