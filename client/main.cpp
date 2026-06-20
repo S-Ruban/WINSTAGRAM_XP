@@ -1,4 +1,7 @@
 #define _WIN32_WINNT 0x0501
+#define WINVER 0x0501
+
+typedef unsigned long ULONG_PTR;
 
 #include <windows.h>
 #include <vector>
@@ -9,6 +12,7 @@
 #include <windowsx.h>
 #include <objbase.h>
 #include <gdiplus.h>
+#pragma message("Using Platform SDK headers")
 using namespace Gdiplus;
 
 #pragma comment(lib, "gdiplus.lib")
@@ -61,20 +65,56 @@ int g_scrollPos = 0;
 
 HBITMAP LoadImageFile(const std::string &filename)
 {
-    std::wstring wfilename(
-        filename.begin(),
-        filename.end());
+    WCHAR wfilename[MAX_PATH];
 
-    Bitmap bitmap(wfilename.c_str());
+    MultiByteToWideChar(
+        CP_ACP,
+        0,
+        filename.c_str(),
+        -1,
+        wfilename,
+        MAX_PATH);
 
-    if (bitmap.GetLastStatus() != Ok)
+    Bitmap bitmap(wfilename);
+
+    Status status = bitmap.GetLastStatus();
+
+    if (status != Ok)
+    {
+        char buf[256];
+
+        wsprintf(
+            buf,
+            "Failed!\nFile=[%s]\nStatus=%d",
+            filename.c_str(),
+            status);
+
+        MessageBox(NULL, buf, "PNG Debug", MB_OK);
+
         return NULL;
+    }
 
     HBITMAP hBitmap = NULL;
 
     bitmap.GetHBITMAP(
         Color(0, 0, 0),
         &hBitmap);
+
+    BITMAP bmp;
+
+    GetObject(
+        hBitmap,
+        sizeof(BITMAP),
+        &bmp);
+
+    char buf[256];
+
+    wsprintf(
+        buf,
+        "BPP=%d",
+        bmp.bmBitsPixel);
+
+    // MessageBox(NULL, buf, "Bitmap Info", MB_OK);
 
     return hBitmap;
 }
@@ -440,6 +480,8 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     EDGE_SUNKEN,
                     BF_RECT);
 
+                SetStretchBltMode(hdc, COLORONCOLOR);
+
                 StretchBlt(
                     hdc,
                     imgRect.left,
@@ -452,6 +494,17 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     bmp.bmWidth,
                     bmp.bmHeight,
                     SRCCOPY);
+
+                // BitBlt(
+                //     hdc,
+                //     imgRect.left,
+                //     imgRect.top,
+                //     bmp.bmWidth,
+                //     bmp.bmHeight,
+                //     hdcMem,
+                //     0,
+                //     0,
+                //     SRCCOPY);
 
                 SelectObject(hdcMem, oldBmp);
                 DeleteDC(hdcMem);

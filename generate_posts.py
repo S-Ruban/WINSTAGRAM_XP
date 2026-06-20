@@ -12,9 +12,9 @@ captions = [
     "Just vibing.",
     "Love this aesthetic!",
     "Simple times.",
-    "Can’t believe this works!",
+    "Can't believe this works!",
     "Testing scrollbar now.",
-    "Let’s add more posts!"
+    "Let's add more posts!"
 ]
 
 imgs = []
