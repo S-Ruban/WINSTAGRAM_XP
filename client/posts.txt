@@ -1,31 +1,30 @@
-ruban::I like Lena Forsen!::lena.bmp
-heidi::Can’t believe this works!::snail.bmp
-judy::Let’s add more posts!::blackbuck.bmp
-eve::Let’s add more posts!::snail.bmp
-frank::Windows XP forever!::cameraman.bmp
-bob::Windows XP forever!::bmp_24.bmp
-judy::Simple times.::bmp_08.bmp
-eve::Testing scrollbar now.::pepper.bmp
-judy::Just vibing.::airplane.bmp
-eve::Can’t believe this works!::bmp_24.bmp
-ivan::Enjoying the retro vibes!::blackbuck.bmp
-ivan::Testing scrollbar now.::pepper.bmp
-bob::Can’t believe this works!::dots.bmp
-dave::Throwback to the 2000s!::bmp_08.bmp
-judy::Posting from WinClassic!::snail.bmp
-charlie::Can’t believe this works!::sailboat.bmp
-eve::Just vibing.::boats.bmp
-eve::Testing scrollbar now.::boats.bmp
-dave::Can’t believe this works!::dots.bmp
-charlie::Just vibing.::dots.bmp
-judy::Love this aesthetic!::pepper.bmp
-eve::Love this aesthetic!::bmp_24.bmp
-alice::Simple times.::cameraman.bmp
-charlie::Enjoying the retro vibes!::cameraman.bmp
-heidi::Let’s add more posts!::lena.bmp
-charlie::Just vibing.::sailboat.bmp
-eve::Posting from WinClassic!::pepper.bmp
-bob::Simple times.::greenland_grid_velo.bmp
-judy::Can’t believe this works!::lena.bmp
-alice::Windows XP forever!::bmp_24.bmp
-eve::Throwback to the 2000s!::boats.bmp
+eve::Just vibing.::greenland_grid_velo.bmp
+eve::Testing scrollbar now.::snail.bmp
+dave::Let’s add more posts!::cameraman.bmp
+dave::Enjoying the retro vibes!::snail.bmp
+charlie::Just vibing.::lena.bmp
+frank::Enjoying the retro vibes!::boats.bmp
+frank::Love this aesthetic!::cameraman.bmp
+alice::Throwback to the 2000s!::cameraman.bmp
+grace::Windows XP forever!::bmp_24.bmp
+grace::Love this aesthetic!::laptop.png
+eve::Simple times.::bmp_24.bmp
+frank::Windows XP forever!::bridge.bmp
+frank::Love this aesthetic!::bridge.bmp
+bob::Posting from WinClassic!::lena.bmp
+grace::Throwback to the 2000s!::bmp_24.bmp
+ivan::Windows XP forever!::dots.bmp
+dave::Windows XP forever!::cameraman.bmp
+alice::Love this aesthetic!::cameraman.bmp
+dave::Windows XP forever!::airplane.bmp
+bob::Throwback to the 2000s!::boats.bmp
+charlie::Throwback to the 2000s!::cameraman.bmp
+dave::Posting from WinClassic!::sailboat.bmp
+grace::Testing scrollbar now.::lena.bmp
+judy::Can’t believe this works!::greenland_grid_velo.bmp
+judy::Simple times.::laptop.png
+alice::Just vibing.::dots.bmp
+heidi::Love this aesthetic!::greenland_grid_velo.bmp
+grace::Enjoying the retro vibes!::dots.bmp
+heidi::Love this aesthetic!::bmp_24.bmp
+heidi::Let’s add more posts!::dots.bmp

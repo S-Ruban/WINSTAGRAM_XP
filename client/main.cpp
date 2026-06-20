@@ -1,8 +1,19 @@
+#define _WIN32_WINNT 0x0501
+
 #include <windows.h>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
+
+#include <windowsx.h>
+#include <objbase.h>
+#include <gdiplus.h>
+using namespace Gdiplus;
+
+#pragma comment(lib, "gdiplus.lib")
+
+ULONG_PTR g_gdiplusToken;
 
 int g_totalContentHeight = 0;
 
@@ -48,6 +59,26 @@ HINSTANCE g_hInstance;
 HWND g_hScrollWnd;
 int g_scrollPos = 0;
 
+HBITMAP LoadImageFile(const std::string &filename)
+{
+    std::wstring wfilename(
+        filename.begin(),
+        filename.end());
+
+    Bitmap bitmap(wfilename.c_str());
+
+    if (bitmap.GetLastStatus() != Ok)
+        return NULL;
+
+    HBITMAP hBitmap = NULL;
+
+    bitmap.GetHBITMAP(
+        Color(0, 0, 0),
+        &hBitmap);
+
+    return hBitmap;
+}
+
 void LoadPostsFromFile()
 {
 
@@ -80,14 +111,7 @@ void LoadPostsFromFile()
             p.caption = caption;
             p.imagePath = imagePath;
 
-            p.hBitmap =
-                (HBITMAP)LoadImage(
-                    NULL,
-                    imagePath.c_str(),
-                    IMAGE_BITMAP,
-                    0,
-                    0,
-                    LR_LOADFROMFILE);
+            p.hBitmap = LoadImageFile(imagePath);
 
             p.imageWidth = 0;
             p.imageHeight = 0;
@@ -156,6 +180,14 @@ void UpdateScrollbar(HWND hwnd)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
+
+    GdiplusStartupInput gdiplusStartupInput;
+
+    GdiplusStartup(
+        &g_gdiplusToken,
+        &gdiplusStartupInput,
+        NULL);
+
     g_hInstance = hInstance;
 
     WNDCLASS wc;
@@ -184,6 +216,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    GdiplusShutdown(g_gdiplusToken);
+
     return 0;
 }
 

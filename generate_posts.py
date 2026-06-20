@@ -17,15 +17,15 @@ captions = [
     "Let’s add more posts!"
 ]
 
-bmps = []
+imgs = []
 
 for file in os.listdir("client/"):
-    if file.endswith(".bmp"):
-        bmps.append(file)
+    if file.endswith(".bmp") or file.endswith(".png") or file.endswith(".jpg"):
+        imgs.append(file)
 
 with open("client/posts.txt", "w", encoding="utf-8") as f:
     for i in range(30):  # Generate 30 posts
         user = random.choice(usernames)
         caption = random.choice(captions)
-        image = random.choice(bmps)
+        image = random.choice(imgs)
         f.write(f"{user}::{caption}::{image}\n")
