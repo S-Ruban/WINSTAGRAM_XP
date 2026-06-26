@@ -42,13 +42,35 @@ def delete_all():
 
 @app.route('/list_files', methods=['GET'])
 def list_files():
-    files_list = []
-    client_dir = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), os.path.pardir, "client"))
-    for file in os.listdir(client_dir):
-        files_list.append(file)
+    client_dir = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            os.path.pardir,
+            "client"))
 
-    return Response('\n'.join(files_list), mimetype='text/plain')
+    print("Serving:", client_dir)
+
+    files = []
+
+    for root, dirs, filenames in os.walk(client_dir):
+        for filename in filenames:
+            full_path = os.path.join(root, filename)
+
+            # Path relative to client/
+            relative_path = os.path.relpath(
+                full_path,
+                client_dir)
+
+            # Convert Windows '\' to '/'
+            relative_path = relative_path.replace("\\", "/")
+
+            files.append(relative_path)
+
+    print(files)
+
+    return Response(
+        "\n".join(files),
+        mimetype="text/plain")
 
 
 @app.route('/download/<path:filename>', methods=['GET'])

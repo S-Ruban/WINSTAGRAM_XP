@@ -20,6 +20,7 @@ using namespace Gdiplus;
 ULONG_PTR g_gdiplusToken;
 
 int g_totalContentHeight = 0;
+std::string IMAGE_DIRECTORY = "images\\";
 
 struct Post
 {
@@ -149,9 +150,8 @@ void LoadPostsFromFile()
 
             p.username = username;
             p.caption = caption;
-            p.imagePath = imagePath;
-
-            p.hBitmap = LoadImageFile(imagePath);
+            p.imagePath = IMAGE_DIRECTORY + imagePath;
+            p.hBitmap = LoadImageFile(p.imagePath);
 
             p.imageWidth = 0;
             p.imageHeight = 0;
@@ -653,7 +653,6 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             break;
 
         case VK_END:
-            // newPos = si.nMax - (int)si.nPage;
             newPos = CalculateFeedHeight();
             break;
 
