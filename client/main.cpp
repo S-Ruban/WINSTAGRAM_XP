@@ -32,6 +32,8 @@ struct Post
     int imageWidth;
     int imageHeight;
     int scaledHeight;
+
+    int postHeight; // cache post's height
 };
 
 std::vector<Post> g_posts;
@@ -175,6 +177,12 @@ void LoadPostsFromFile()
 
                 p.scaledHeight =
                     (int)(bmp.bmHeight * scale);
+
+                p.postHeight =
+                    30 + // username
+                    p.scaledHeight + 10 +
+                    30 + // caption
+                    15;  // spacing
             }
 
             g_posts.push_back(p);
@@ -420,11 +428,15 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
     case WM_PAINT:
     {
+        int renderedPosts = 0;
+
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
         RECT client;
         GetClientRect(hwnd, &client);
+        int visibleTop = 0;
+        int visibleBottom = client.bottom;
 
         int currentY = -g_scrollPos + 10;
 
@@ -432,6 +444,22 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         {
             int postTop = currentY;
 
+            int postHeight = g_posts[i].postHeight;
+
+            int postBottom = postTop + postHeight;
+
+            if (postBottom < visibleTop)
+            {
+                currentY += postHeight;
+                continue; // skip rendering current post if it lies above the scrollbar
+            }
+
+            if (postTop > visibleBottom)
+            {
+                break; // stop rendering further posts if they lie below the scrollbar
+            }
+
+            renderedPosts++;
             // Rendering username
             RECT userRect = {20, currentY + 5, 360, currentY + 25};
             DrawText(
@@ -543,6 +571,10 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
             currentY += 15;
         }
+
+        char buf[64];
+        wsprintf(buf, "Rendered %d posts", renderedPosts);
+        // SetWindowText(GetParent(hwnd), buf);
 
         EndPaint(hwnd, &ps);
         return 0;
