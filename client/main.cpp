@@ -73,7 +73,7 @@ HBITMAP LoadImageFile(const std::string &filename)
         filename.c_str(),
         -1,
         wfilename,
-        MAX_PATH);
+        MAX_PATH); // GDI+ handles strings the old way
 
     Bitmap bitmap(wfilename);
 
@@ -113,8 +113,6 @@ HBITMAP LoadImageFile(const std::string &filename)
         buf,
         "BPP=%d",
         bmp.bmBitsPixel);
-
-    // MessageBox(NULL, buf, "Bitmap Info", MB_OK);
 
     return hBitmap;
 }
@@ -480,7 +478,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     EDGE_SUNKEN,
                     BF_RECT);
 
-                SetStretchBltMode(hdc, COLORONCOLOR);
+                SetStretchBltMode(hdc, COLORONCOLOR); // needed to stretch png/jpg
 
                 StretchBlt(
                     hdc,
@@ -495,20 +493,8 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                     bmp.bmHeight,
                     SRCCOPY);
 
-                // BitBlt(
-                //     hdc,
-                //     imgRect.left,
-                //     imgRect.top,
-                //     bmp.bmWidth,
-                //     bmp.bmHeight,
-                //     hdcMem,
-                //     0,
-                //     0,
-                //     SRCCOPY);
-
                 SelectObject(hdcMem, oldBmp);
                 DeleteDC(hdcMem);
-                // DeleteObject(hBitmap);
             }
             else
             {
