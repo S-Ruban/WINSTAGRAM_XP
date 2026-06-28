@@ -132,6 +132,14 @@ HBITMAP LoadImageFile(const std::string &filename)
     return hBitmap;
 }
 
+int CalculatePostHeight(const Post &p)
+{
+    return 30 + // username
+           p.scaledHeight + 10 +
+           p.captionHeight + 10 +
+           15;
+}
+
 void LoadPostsFromFile()
 {
 
@@ -191,30 +199,21 @@ void LoadPostsFromFile()
                 p.scaledHeight =
                     (int)(bmp.bmHeight * scale);
 
-                p.postHeight =
-                    30 + // username
-                    p.scaledHeight + 10 +
-                    30 + // caption
-                    15;  // spacing
+                HDC hdc = GetDC(NULL); // give a generic display screen, since the caption size is calculated
+                                       // before the post is actually rendered for the first time
+
+                RECT rc = {0, 0, 340, 0};
+
+                DrawText(
+                    hdc, p.caption.c_str(), -1, &rc,       // CALCRECT is to estimate the rectangle size to hold the caption
+                    DT_LEFT | DT_WORDBREAK | DT_CALCRECT); // does not actually draw the rectangle
+
+                ReleaseDC(NULL, hdc); // "I don't want to play with you anymore"
+
+                p.captionHeight = rc.bottom - rc.top;
+
+                p.postHeight = CalculatePostHeight(p);
             }
-
-            HDC hdc = GetDC(NULL); // give a generic display screen, since the caption size is calculated
-                                   // before the post is actually rendered for the first time
-
-            RECT rc = {0, 0, 340, 0};
-
-            DrawText(
-                hdc,
-                p.caption.c_str(),
-                -1,
-                &rc,
-                DT_LEFT |
-                    DT_WORDBREAK |
-                    DT_CALCRECT);
-
-            ReleaseDC(NULL, hdc);
-
-            p.captionHeight = rc.bottom - rc.top;
 
             g_posts.push_back(p);
         }
@@ -226,34 +225,7 @@ int CalculateFeedHeight()
     int total = 10;
 
     for (size_t i = 0; i < g_posts.size(); ++i)
-    {
-        HDC hdc = GetDC(NULL);
-
-        RECT rc =
-            {
-                0,
-                0,
-                340,
-                0};
-
-        DrawText(
-            hdc,
-            g_posts[i].caption.c_str(),
-            -1,
-            &rc,
-            DT_LEFT |
-                DT_WORDBREAK |
-                DT_CALCRECT);
-
-        ReleaseDC(NULL, hdc);
-
-        total += rc.bottom;
-
-        total += 30; // username
-        total += g_posts[i].scaledHeight + 10;
-        // total += 30; // caption
-        total += 15; // spacing
-    }
+        total += CalculatePostHeight(g_posts[i]);
 
     return total;
 }
@@ -275,6 +247,21 @@ void UpdateScrollbar(HWND hwnd)
     si.nPos = g_scrollPos;
 
     SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+}
+
+void RefreshFeed(HWND hwnd)
+{
+    LoadPostsFromFile();
+
+    g_scrollPos = 0;
+
+    UpdateScrollbar(hwnd);
+
+    SCROLLINFO si = {sizeof(si), SIF_POS};
+    si.nPos = g_scrollPos;
+    SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+    InvalidateRect(hwnd, NULL, TRUE);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
@@ -330,7 +317,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         // Create the scrollable child window
         g_hScrollWnd = CreateWindow("ScrollWin", NULL,
-                                    // WS_CHILD | WS_VISIBLE | WS_VSCROLL,
                                     WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_TABSTOP,
                                     0, 40, 400, 560, // leave space at top for title and button
                                     hwnd, NULL, g_hInstance, NULL);
@@ -351,21 +337,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     case WM_COMMAND:
     {
-        if (LOWORD(wParam) == 1) // Refresh button
+        if (LOWORD(wParam) == 1) // Refresh button is clicked
         {
-            g_scrollPos = 0;
-
-            SCROLLINFO si = {sizeof(si), SIF_POS};
-            si.nPos = g_scrollPos;
-            SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-
-            // Force repaint from top
-            ScrollWindow(hwnd, 0, 0, NULL, NULL);
-            UpdateWindow(hwnd);
-
-            LoadPostsFromFile();                          // reload from file
-            InvalidateRect(g_hScrollWnd, NULL, TRUE);     // repaint scroll window
-            SendMessage(g_hScrollWnd, WM_USER + 1, 0, 0); // Custom message to refresh
+            RefreshFeed(g_hScrollWnd);
         }
         return 0;
     }
@@ -401,7 +375,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             g_scrollPos = si.nMax - si.nPage;
             if (g_scrollPos < 0)
                 g_scrollPos = 0;
-
             break;
         }
 
@@ -431,11 +404,8 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
     case WM_CREATE:
     {
         LoadPostsFromFile();
-
         g_scrollPos = 0;
-
         UpdateScrollbar(hwnd);
-
         return 0;
     }
 
@@ -496,17 +466,15 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         for (int i = 0; i < g_posts.size(); ++i)
         {
             int postTop = currentY;
-
             int postHeight = g_posts[i].postHeight;
-
             int postBottom = postTop + postHeight;
 
+            // really simple viewport culling - skip rendering anything above the viewport, and stop rendering by the end of the viewport
             if (postBottom < visibleTop)
             {
                 currentY += postHeight;
                 continue; // skip rendering current post if it lies above the scrollbar
             }
-
             if (postTop > visibleBottom)
             {
                 break; // stop rendering further posts if they lie below the scrollbar
@@ -516,10 +484,7 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             // Rendering username
             RECT userRect = {20, currentY + 5, 360, currentY + 25};
             DrawText(
-                hdc,
-                g_posts[i].username.c_str(),
-                -1,
-                &userRect,
+                hdc, g_posts[i].username.c_str(), -1, &userRect,
                 DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
             currentY += 30;
@@ -543,24 +508,12 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 imgRect.bottom = currentY + scaledHeight; // calculate bottom of image border using scaled height of image
 
                 HDC hdcMem = CreateCompatibleDC(hdc);
-                HBITMAP oldBmp =
-                    (HBITMAP)SelectObject(hdcMem, hBitmap);
+                HBITMAP oldBmp = (HBITMAP)SelectObject(hdcMem, hBitmap);
 
-                RECT frameRect =
-                    {
-                        imgRect.left - 4,
-                        imgRect.top - 4,
-                        imgRect.right + 4,
-                        imgRect.bottom + 4};
+                RECT frameRect = {imgRect.left - 4, imgRect.top - 4, imgRect.right + 4, imgRect.bottom + 4};
 
-                DrawEdge(
-                    hdc,
-                    &frameRect,
-                    EDGE_SUNKEN,
-                    BF_RECT);
-
+                DrawEdge(hdc, &frameRect, EDGE_SUNKEN, BF_RECT);
                 SetStretchBltMode(hdc, COLORONCOLOR); // needed to stretch png/jpg
-
                 StretchBlt(
                     hdc,
                     imgRect.left,
@@ -584,49 +537,22 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
                 imgRect.right = 20 + scaledWidth;
                 imgRect.bottom = currentY + scaledHeight;
 
-                FillRect(
-                    hdc,
-                    &imgRect,
-                    (HBRUSH)GetStockObject(LTGRAY_BRUSH));
-
-                DrawEdge(
-                    hdc,
-                    &imgRect,
-                    EDGE_SUNKEN,
-                    BF_RECT);
+                FillRect(hdc, &imgRect, (HBRUSH)GetStockObject(LTGRAY_BRUSH));
+                DrawEdge(hdc, &imgRect, EDGE_SUNKEN, BF_RECT);
             }
             currentY += scaledHeight + 10;
 
             // Rendering caption
-            RECT capRect =
-                {
-                    20,
-                    currentY,
-                    360,
-                    currentY + g_posts[i].captionHeight};
+            RECT capRect = {20, currentY, 360, currentY + g_posts[i].captionHeight};
 
-            DrawText(
-                hdc,
-                g_posts[i].caption.c_str(),
-                -1,
-                &capRect,
-                DT_LEFT | DT_WORDBREAK);
+            DrawText(hdc, g_posts[i].caption.c_str(), -1, &capRect, DT_LEFT | DT_WORDBREAK);
 
             currentY += g_posts[i].captionHeight;
             currentY += 10;
 
-            RECT postRect =
-                {
-                    10,
-                    postTop,
-                    380,
-                    currentY};
+            RECT postRect = {10, postTop, 380, currentY};
 
-            DrawEdge(
-                hdc,
-                &postRect,
-                EDGE_ETCHED,
-                BF_RECT);
+            DrawEdge(hdc, &postRect, EDGE_ETCHED, BF_RECT);
 
             currentY += 15;
         }
@@ -673,16 +599,9 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
         return 0;
     }
 
-    case WM_USER + 1:
+    case WM_USER + 1: // kinda useless but keeping it for now
     {
-        LoadPostsFromFile();
-
-        g_scrollPos = 0;
-
-        UpdateScrollbar(hwnd);
-
-        InvalidateRect(hwnd, NULL, TRUE);
-
+        RefreshFeed(hwnd);
         return 0;
     }
 
