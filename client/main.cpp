@@ -34,8 +34,20 @@ struct Post
     int imageHeight;
     int scaledHeight;
 
-    int postHeight; // cache post's height
+    int postHeight;    // cache post's height
+    int captionHeight; // cache caption height
 };
+
+void ReplaceNewlines(std::string &text)
+{
+    size_t pos = 0;
+
+    while ((pos = text.find("\\n", pos)) != std::string::npos)
+    {
+        text.replace(pos, 2, "\n");
+        pos++;
+    }
+}
 
 std::vector<Post> g_posts;
 
@@ -150,6 +162,7 @@ void LoadPostsFromFile()
 
             p.username = username;
             p.caption = caption;
+            ReplaceNewlines(p.caption);
             p.imagePath = IMAGE_DIRECTORY + imagePath;
             p.hBitmap = LoadImageFile(p.imagePath);
 
@@ -185,6 +198,24 @@ void LoadPostsFromFile()
                     15;  // spacing
             }
 
+            HDC hdc = GetDC(NULL); // give a generic display screen, since the caption size is calculated
+                                   // before the post is actually rendered for the first time
+
+            RECT rc = {0, 0, 340, 0};
+
+            DrawText(
+                hdc,
+                p.caption.c_str(),
+                -1,
+                &rc,
+                DT_LEFT |
+                    DT_WORDBREAK |
+                    DT_CALCRECT);
+
+            ReleaseDC(NULL, hdc);
+
+            p.captionHeight = rc.bottom - rc.top;
+
             g_posts.push_back(p);
         }
     }
@@ -196,9 +227,31 @@ int CalculateFeedHeight()
 
     for (size_t i = 0; i < g_posts.size(); ++i)
     {
+        HDC hdc = GetDC(NULL);
+
+        RECT rc =
+            {
+                0,
+                0,
+                340,
+                0};
+
+        DrawText(
+            hdc,
+            g_posts[i].caption.c_str(),
+            -1,
+            &rc,
+            DT_LEFT |
+                DT_WORDBREAK |
+                DT_CALCRECT);
+
+        ReleaseDC(NULL, hdc);
+
+        total += rc.bottom;
+
         total += 30; // username
         total += g_posts[i].scaledHeight + 10;
-        total += 30; // caption
+        // total += 30; // caption
         total += 15; // spacing
     }
 
@@ -545,16 +598,22 @@ LRESULT CALLBACK ScrollWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             currentY += scaledHeight + 10;
 
             // Rendering caption
-            RECT capRect = {20, currentY, 360, currentY + 20};
+            RECT capRect =
+                {
+                    20,
+                    currentY,
+                    360,
+                    currentY + g_posts[i].captionHeight};
 
             DrawText(
                 hdc,
                 g_posts[i].caption.c_str(),
                 -1,
                 &capRect,
-                DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+                DT_LEFT | DT_WORDBREAK);
 
-            currentY += 30;
+            currentY += g_posts[i].captionHeight;
+            currentY += 10;
 
             RECT postRect =
                 {
